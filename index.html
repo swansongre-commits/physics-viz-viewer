@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>진자와 역학적 에너지</title>
+    <script type="module" crossorigin>(function(){let e=document.createElement(`link`).relList;if(e&&e.supports&&e.supports(`modulepreload`))return;for(let e of document.querySelectorAll(`link[rel="modulepreload"]`))n(e);new MutationObserver(e=>{for(let t of e)if(t.type===`childList`)for(let e of t.addedNodes)e.tagName===`LINK`&&e.rel===`modulepreload`&&n(e)}).observe(document,{childList:!0,subtree:!0});function t(e){let t={};return e.integrity&&(t.integrity=e.integrity),e.referrerPolicy&&(t.referrerPolicy=e.referrerPolicy),t.credentials=e.crossOrigin===`use-credentials`?`include`:e.crossOrigin===`anonymous`?`omit`:`same-origin`,t}function n(e){if(e.ep)return;e.ep=!0;let n=t(e);fetch(e.href,n)}})();var e=.08,t=1/1e3,n=class{params;theta=0;omega=0;time=0;releaseAngle=0;period=null;maxSpeed=0;initialEnergy=0;crossings=[];constructor(e){this.params={...e}}release(e){this.releaseAngle=e,this.theta=e,this.omega=0,this.time=0,this.period=null,this.maxSpeed=0,this.crossings=[],this.initialEnergy=this.potentialAt(e)}advance(e){let n=e;for(;n>1e-12;){let e=Math.min(t,n);this.rk4(e),n-=e}}get initialTotal(){return this.initialEnergy}potentialAt(e){let{mass:t,g:n,length:r}=this.params;return t*n*r*(1-Math.cos(e))}energies(){let{mass:e,length:t}=this.params,n=Math.abs(this.omega)*t,r=t*(1-Math.cos(this.theta)),i=.5*e*n*n,a=this.potentialAt(this.theta),o=i+a;return{kinetic:i,potential:a,mechanical:o,heat:Math.max(0,this.initialEnergy-o),height:r,speed:n}}theoreticalPeriod(){return 2*Math.PI*Math.sqrt(this.params.length/this.params.g)}accel(t,n){let{g:r,length:i,mass:a,airDrag:o}=this.params,s=-(r/i)*Math.sin(t);return o&&(s-=e/a*n),s}rk4(e){let t=this.theta,n=this.omega,r=n,i=this.accel(t,n),a=n+.5*e*i,o=this.accel(t+.5*e*r,n+.5*e*i),s=n+.5*e*o,c=this.accel(t+.5*e*a,n+.5*e*o),l=n+e*c,u=this.accel(t+e*s,n+e*c),d=t+e/6*(r+2*a+2*s+l),f=n+e/6*(i+2*o+2*c+u);if(t<0&&d>=0||t>0&&d<=0){let n=this.time+e*(-t/(d-t));this.crossings.push(n),this.crossings.length>3&&this.crossings.shift(),this.crossings.length===3&&(this.period=n-this.crossings[0])}this.theta=d,this.omega=f,this.time+=e,this.maxSpeed=Math.max(this.maxSpeed,Math.abs(f)*this.params.length)}},r=class{fills={};values={};heatBar;stack;totalValue;totalLabel;constructor(e){for(let t of[`kinetic`,`potential`,`heat`]){let n=e.querySelector(`.bar[data-key="${t}"]`);this.fills[t]=n.querySelector(`.bar-fill`),this.values[t]=n.querySelector(`.bar-value`)}this.heatBar=e.querySelector(`.bar[data-key="heat"]`),this.stack={kinetic:e.querySelector(`.seg-kinetic`),potential:e.querySelector(`.seg-potential`),heat:e.querySelector(`.seg-heat`)},this.totalValue=e.querySelector(`.bar.total .bar-value`),this.totalLabel=e.querySelector(`.bar.total .bar-label`)}update(e,t,n){let r=e=>t>1e-9?Math.max(0,Math.min(100,e/t*100)):0,i=n||e.heat>t*.001;for(let t of[`kinetic`,`potential`,`heat`])this.fills[t].style.height=`${r(e[t])}%`,this.values[t].textContent=`${e[t].toFixed(2)} J`,this.stack[t].style.height=`${r(e[t])}%`;this.heatBar.hidden=!i,this.stack.heat.hidden=!i;let a=i?e.mechanical+e.heat:e.mechanical;this.totalValue.textContent=`${a.toFixed(2)} J`,this.totalLabel.innerHTML=i?`전체<br>에너지`:`역학적<br>에너지`}},i=`
+  <div class="f-row">
+    <div class="f-name c-potential">위치 에너지</div>
+    <div class="f-expr">9.8 × 질량 × 높이</div>
+    <div class="f-sub">= 9.8 × <b data-f="m"></b> × <b data-f="h"></b> = <b data-f="ep"></b> J</div>
+  </div>
+  <div class="f-row">
+    <div class="f-name c-kinetic">운동 에너지</div>
+    <div class="f-expr">½ × 질량 × 속력²</div>
+    <div class="f-sub">= ½ × <b data-f="m"></b> × <b data-f="v"></b>² = <b data-f="ek"></b> J</div>
+  </div>
+  <div class="f-row">
+    <div class="f-name">역학적 에너지</div>
+    <div class="f-expr">위치 에너지 + 운동 에너지</div>
+    <div class="f-sub">= <b data-f="e"></b> J</div>
+  </div>
+`,a=`
+  <div class="f-row">
+    <div class="f-name c-potential">위치 에너지</div>
+    <div class="f-expr"><i>E</i><sub>p</sub> = <i>mgh</i></div>
+    <div class="f-sub">= <b data-f="m"></b> × <b data-f="g"></b> × <b data-f="h"></b> = <b data-f="ep"></b> J</div>
+  </div>
+  <div class="f-row">
+    <div class="f-name c-kinetic">운동 에너지</div>
+    <div class="f-expr"><i>E</i><sub>k</sub> = ½<i>mv</i>²</div>
+    <div class="f-sub">= ½ × <b data-f="m"></b> × <b data-f="v"></b>² = <b data-f="ek"></b> J</div>
+  </div>
+  <div class="f-row">
+    <div class="f-name">역학적 에너지</div>
+    <div class="f-expr"><i>E</i> = <i>E</i><sub>k</sub> + <i>E</i><sub>p</sub></div>
+    <div class="f-sub">= <b data-f="e"></b> J</div>
+  </div>
+  <div class="f-row f-period">
+    <div class="f-name">주기</div>
+    <dl class="f-table">
+      <dt>놓은 각도 <i>θ</i><sub>0</sub></dt><dd><b data-f="a"></b>°</dd>
+      <dt>측정 주기</dt><dd><b data-f="tm"></b></dd>
+      <dt>이론 주기 2π√(<i>L</i>/<i>g</i>)</dt><dd><b data-f="tt"></b> s</dd>
+    </dl>
+    <p class="f-note" data-f="note"></p>
+  </div>
+`,o=class{root;fields=new Map;constructor(e){this.root=e}setMode(e){this.root.innerHTML=e===`middle`?i:a,this.fields.clear(),this.root.querySelectorAll(`[data-f]`).forEach(e=>{let t=e.dataset.f;this.fields.set(t,[...this.fields.get(t)??[],e])})}update(e,t){let{mass:n,g:r}=e.params;this.set(`m`,n.toFixed(1)),this.set(`g`,r.toFixed(1)),this.set(`h`,t.height.toFixed(2)),this.set(`v`,t.speed.toFixed(2)),this.set(`ep`,t.potential.toFixed(2)),this.set(`ek`,t.kinetic.toFixed(2)),this.set(`e`,t.mechanical.toFixed(2));let i=Math.round(Math.abs(e.releaseAngle)*180/Math.PI);this.set(`a`,String(i)),this.set(`tm`,e.period===null?`재는 중…`:`${e.period.toFixed(3)} s`),this.set(`tt`,e.theoreticalPeriod().toFixed(3)),this.set(`note`,i>15?`진폭이 커서 측정 주기가 이론값보다 깁니다. 2π√(L/g)는 진폭이 작을 때 성립하는 근사식입니다.`:`진폭이 작아 측정 주기와 이론 주기가 거의 같습니다.`)}set(e,t){for(let n of this.fields.get(e)??[])n.textContent!==t&&(n.textContent=t)}};function s(e){let t=window.devicePixelRatio||1,{width:n,height:r}=e.getBoundingClientRect(),i=Math.max(1,Math.round(n*t)),a=Math.max(1,Math.round(r*t));(e.width!==i||e.height!==a)&&(e.width=i,e.height=a);let o=e.getContext(`2d`);return o.setTransform(t,0,0,t,0,0),{ctx:o,width:n,height:r}}function c(e,t,n,r,i){e.beginPath(),e.moveTo(t,n),e.lineTo(r,i),e.stroke()}function l(e,t,n,r,i,a){let o=Math.atan2(i-n,r-t);c(e,t,n,r,i),e.beginPath(),e.moveTo(r,i),e.lineTo(r-a*Math.cos(o-.45),i-a*Math.sin(o-.45)),e.lineTo(r-a*Math.cos(o+.45),i-a*Math.sin(o+.45)),e.closePath(),e.fill()}var u=`"Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif`,d={ink:`#111111`,muted:`#6b6b6b`,line:`#d9d9d9`,kinetic:`#2563eb`,potential:`#ea580c`,heat:`#9ca3af`,scale:1};function f(){let e=getComputedStyle(document.documentElement),t=(t,n)=>e.getPropertyValue(t).trim()||n;d.ink=t(`--ink`,d.ink),d.muted=t(`--muted`,d.muted),d.line=t(`--line`,d.line),d.kinetic=t(`--kinetic`,d.kinetic),d.potential=t(`--potential`,d.potential),d.heat=t(`--heat`,d.heat),d.scale=parseFloat(e.fontSize)/14||1}function p(e,t=400){return`${t} ${e*d.scale}px ${u}`}var m=10,h=1/30,g=class{canvas;samples=[];constructor(e){this.canvas=e}clear(){this.samples=[]}record(e){let t=this.samples[this.samples.length-1];if(t&&e.time-t.t<h)return;let n=e.energies();this.samples.push({t:e.time,kinetic:n.kinetic,potential:n.potential,mechanical:n.mechanical,heat:n.heat});let r=e.time-m-1;for(;this.samples.length&&this.samples[0].t<r;)this.samples.shift()}draw(e,t){let{ctx:n,width:r,height:i}=s(this.canvas),a=d.scale;n.clearRect(0,0,r,i);let o=46*a,l=12*a,u=10*a,f=30*a,h=r-o-l,g=i-u-f,_=Math.max(m,this.samples.length?this.samples[this.samples.length-1].t:0),v=_-m,y=e>1e-9?e*1.1:1,b=e=>o+(e-v)/m*h,x=e=>u+g-e/y*g;n.lineWidth=1,n.font=p(11),n.fillStyle=d.muted,n.strokeStyle=d.line,n.textAlign=`center`,n.textBaseline=`top`;for(let e=Math.ceil(v);e<=_;e+=1){let t=b(e);c(n,t,u,t,u+g),e%2==0&&n.fillText(`${e}`,t,u+g+5*a)}n.textAlign=`right`,n.textBaseline=`middle`;for(let t=0;t<=4;t++){let r=e*t/4,i=x(r);c(n,o,i,o+h,i),n.fillText(r.toFixed(r<10?2:1),o-6*a,i)}n.strokeStyle=d.ink,c(n,o,u,o,u+g),c(n,o,u+g,o+h,u+g),n.textAlign=`right`,n.textBaseline=`bottom`,n.fillText(`시간 (s)`,o+h,i-1*a),n.save(),n.translate(12*a,u+g/2),n.rotate(-Math.PI/2),n.textAlign=`center`,n.textBaseline=`middle`,n.fillText(`에너지 (J)`,0,0),n.restore();let S=(e,t,r,i=[])=>{n.strokeStyle=t,n.lineWidth=r,n.setLineDash(i),n.beginPath();let a=!1;for(let t of this.samples){if(t.t<v)continue;let r=b(t.t),i=x(t[e]);a?n.lineTo(r,i):(n.moveTo(r,i),a=!0)}n.stroke(),n.setLineDash([]),n.lineWidth=1};n.save(),n.beginPath(),n.rect(o,u-2,h,g+4),n.clip(),S(`potential`,d.potential,1.5),S(`kinetic`,d.kinetic,1.5),t&&S(`heat`,d.heat,1.5,[5*a,3*a]),S(`mechanical`,d.ink,1.5),n.restore()}},_={middle:[{prompt:`공기 저항이 없을 때, 추를 한쪽에서 놓으면 반대쪽에서는 어디까지 올라갈까요?`,options:[`처음보다 더 높이`,`처음과 같은 높이`,`처음보다 낮게`],answer:1,check:`공기 저항을 끄고 추를 놓은 뒤, 반대쪽 끝이 주황색 점선(처음 놓은 높이)에 닿는지 보세요.`,setup:{airDrag:!1,angleDeg:40,mass:1,length:1,speed:1},explain:`공기 저항이 없으면 역학적 에너지가 보존됩니다. 반대쪽 끝에서 속력이 0이 되면 운동 에너지가 모두 위치 에너지로 바뀌므로, 처음과 같은 높이까지 올라갑니다.`,standards:[`[9과19-04]`]},{prompt:`추가 가장 낮은 곳을 지날 때 운동 에너지는 어떨까요?`,options:[`가장 작다`,`가장 크다`,`어디서나 같다`],answer:1,check:`느리게(¼배속) 재생하면서, 추가 기준면을 지날 때 파란 막대를 보세요.`,setup:{airDrag:!1,angleDeg:50,speed:.25},explain:`가장 낮은 곳에서는 높이가 0이라 위치 에너지가 가장 작습니다. 줄어든 위치 에너지만큼 운동 에너지가 늘어나므로 운동 에너지가 가장 크고, 속력도 이곳에서 가장 빠릅니다.`,standards:[`[9과19-03]`,`[9과19-04]`]},{prompt:`추의 질량을 2배로 늘리면, 가장 낮은 곳을 지날 때의 속력은 어떻게 될까요?`,options:[`더 빨라진다`,`같다`,`더 느려진다`],answer:1,check:`질량 1.0 kg에서 "최고 속력"을 확인한 뒤, 질량을 2.0 kg으로 바꾸어 다시 확인하세요.`,setup:{airDrag:!1,angleDeg:40,mass:1,length:1,speed:1},explain:`질량이 2배가 되면 위치 에너지도 2배, 운동 에너지도 2배가 됩니다. 둘 다 질량에 비례하므로 속력은 그대로입니다. 무거운 추라고 더 빨리 움직이지 않습니다.`,standards:[`[9과19-03]`,`[9과19-04]`]},{prompt:`공기 저항이 있으면 역학적 에너지는 어떻게 될까요?`,options:[`그대로 유지된다`,`점점 줄어든다`,`점점 늘어난다`],answer:1,check:`공기 저항을 켜고, 맨 오른쪽 전체 에너지 막대에서 회색 부분이 어떻게 변하는지 지켜보세요.`,setup:{airDrag:!0,angleDeg:60,speed:1},explain:`공기 저항 때문에 역학적 에너지는 조금씩 줄어듭니다. 줄어든 만큼은 열에너지 등 다른 형태로 바뀌었기 때문에, 회색 부분까지 더한 전체 에너지는 변하지 않습니다.`,standards:[`[9과19-04]`]}],high:[{prompt:`추의 질량을 2배로 하면 진자의 주기는 어떻게 될까요?`,options:[`2배가 된다`,`변하지 않는다`,`½배가 된다`],answer:1,check:`질량 1.0 kg에서 측정 주기를 적어 두고, 2.0 kg으로 바꾸어 비교하세요.`,setup:{airDrag:!1,angleDeg:10,mass:1,length:1,g:9.8,speed:1},explain:`접선 방향 운동 방정식 ma = −mg sinθ 에서 질량이 양쪽에 함께 있어 약분됩니다. 그래서 주기 T = 2π√(L/g)에도 질량이 들어 있지 않습니다.`,standards:[`[12물실02-06]`]},{prompt:`줄 길이를 4배로 늘리면 주기는 어떻게 될까요?`,options:[`2배가 된다`,`4배가 된다`,`16배가 된다`],answer:0,check:`줄 길이 0.5 m에서 측정 주기를 적어 두고, 2.0 m로 바꾸어 비교하세요.`,setup:{airDrag:!1,angleDeg:10,mass:1,length:.5,g:9.8,speed:1},explain:`T = 2π√(L/g)이므로 주기는 √L에 비례합니다. L이 4배가 되면 T는 √4 = 2배가 됩니다.`,standards:[`[12물실02-06]`]},{prompt:`같은 진자를 달(g = 1.6 m/s²)로 가져가면 주기는 어떻게 될까요?`,options:[`짧아진다`,`약 2.5배 길어진다`,`변하지 않는다`],answer:1,check:`중력을 지구와 달로 바꾸어 가며 측정 주기를 비교하세요.`,setup:{airDrag:!1,angleDeg:10,mass:1,length:1,g:9.8,speed:1},explain:`주기는 1/√g에 비례합니다. √(9.8 ÷ 1.6) ≈ 2.5 이므로 달에서는 주기가 약 2.5배 길어집니다.`,standards:[`[12물실02-06]`]},{prompt:`놓는 각도를 10°에서 60°로 키우면 주기는 어떻게 될까요?`,options:[`변하지 않는다`,`조금 길어진다`,`짧아진다`],answer:1,check:`놓는 각도 10°와 60°에서 측정 주기를 비교하고, 이론 주기와도 비교해 보세요.`,setup:{airDrag:!1,angleDeg:10,mass:1,length:1,g:9.8,speed:1},explain:`T = 2π√(L/g)는 진폭이 작을 때(sinθ ≈ θ) 성립하는 근사식입니다. 60°에서는 실제 주기가 이론값보다 약 7% 깁니다. 진자 실험에서 진폭을 작게 하라고 하는 이유입니다.`,standards:[`[12물실02-06]`]},{prompt:`길이 1.0 m인 진자를 60°에서 놓으면, 가장 낮은 곳에서의 속력은 약 얼마일까요?`,options:[`약 1.6 m/s`,`약 3.1 m/s`,`약 9.8 m/s`],answer:1,check:`조건을 맞춘 뒤 "최고 속력" 값을 확인하세요. 질량을 바꿔도 같은지 보세요.`,setup:{airDrag:!1,angleDeg:60,mass:1,length:1,g:9.8,speed:1},explain:`처음 높이 h = L(1 − cos60°) = 0.5 m입니다. mgh = ½mv² 에서 v = √(2gh) = √(2 × 9.8 × 0.5) ≈ 3.1 m/s이고, 질량과는 관계가 없습니다.`,standards:[`[12물리01-04]`]},{prompt:`공기 저항이 있을 때, 역학적 에너지와 열을 포함한 전체 에너지는 각각 어떻게 될까요?`,options:[`둘 다 줄어든다`,`역학적 에너지만 줄고, 전체 에너지는 일정하다`,`둘 다 일정하다`],answer:1,check:`공기 저항을 켜고, 그래프의 검은 선(역학적 에너지)과 회색 점선(열 등)을 함께 지켜보세요.`,setup:{airDrag:!0,angleDeg:60,mass:1,length:1,g:9.8,speed:1},explain:`공기 저항이 한 일만큼 역학적 에너지가 줄고, 그만큼 열에너지 등으로 바뀝니다. 검은 선이 내려간 만큼 회색 점선이 올라가므로, 둘을 더한 전체 에너지는 처음 역학적 에너지와 같습니다.`,standards:[`[12물리01-05]`]}]},v=class{root;applySetup;onChange;list=[];index=0;choice=null;revealed=!1;constructor(e,t,n){this.root=e,this.applySetup=t,this.onChange=n,e.addEventListener(`click`,e=>{let t=e.target.closest(`button`);if(!t)return;let n=this.list[this.index];if(t.dataset.opt!==void 0)this.choice=Number(t.dataset.opt);else if(t.dataset.act===`setup`&&n.setup){this.applySetup(n.setup);return}else if(t.dataset.act===`reveal`)this.revealed=!0;else if(t.dataset.act===`prev`||t.dataset.act===`next`){let e=t.dataset.act===`next`?1:-1;this.goTo((this.index+e+this.list.length)%this.list.length);return}else return;this.render()})}setMode(e){this.list=_[e],this.goTo(0)}goTo(e){this.index=e,this.choice=null,this.revealed=!1,this.render(),this.onChange(e,this.list[e])}render(){let e=this.list[this.index],t=this.choice!==null,n=this.choice===e.answer,r=e.options.map((n,r)=>{let i=[`q-opt`];return r===this.choice&&i.push(`chosen`),this.revealed&&r===e.answer&&i.push(`correct`),`<button type="button" class="${i.join(` `)}" data-opt="${r}" ${t?`disabled`:``}>${n}</button>`}).join(``),i=t?`<div class="q-step">
+          <p><b>확인해 보기</b> ${e.check}</p>
+          <div class="q-actions">
+            ${e.setup?`<button type="button" data-act="setup">실험 조건 맞추기</button>`:``}
+            ${this.revealed?``:`<button type="button" class="primary" data-act="reveal">결과 확인</button>`}
+          </div>
+        </div>`:`<p class="q-hint">먼저 답을 하나 골라 예측해 보세요.</p>`,a=this.revealed?`<div class="q-result ${n?`ok`:`no`}">
+          <p><b>${n?`예측이 맞았어요.`:`예측과 달랐어요.`}</b> 정답: ${e.options[e.answer]}</p>
+          <p>${e.explain}</p>
+        </div>`:``;this.root.innerHTML=`
+      <div class="panel-head">
+        <h2>예측해 보기</h2>
+        <div class="q-nav">
+          <button type="button" data-act="prev" aria-label="이전 질문">이전</button>
+          <span>${this.index+1} / ${this.list.length}</span>
+          <button type="button" data-act="next" aria-label="다음 질문">다음</button>
+        </div>
+      </div>
+      <p class="q-prompt">${e.prompt}</p>
+      <p class="q-standards">관련 성취기준 ${e.standards.map(e=>`<span class="std-chip">${e}</span>`).join(` `)}</p>
+      <div class="q-options">${r}</div>
+      ${i}
+      ${a}
+    `}},y=2,b=Math.PI/2,x=class{canvas;sim;handlers;px=0;py=0;grabbing=!1;constructor(e,t,n){this.canvas=e,this.sim=t,this.handlers=n,e.addEventListener(`pointerdown`,t=>{this.grabbing=!0,e.setPointerCapture(t.pointerId),n.onGrab(),this.dragTo(t)}),e.addEventListener(`pointermove`,e=>{this.grabbing&&this.dragTo(e)});let r=()=>{this.grabbing&&(this.grabbing=!1,n.onRelease())};e.addEventListener(`pointerup`,r),e.addEventListener(`pointercancel`,r)}dragTo(e){let t=this.canvas.getBoundingClientRect(),n=e.clientX-t.left-this.px,r=e.clientY-t.top-this.py,i=Math.atan2(n,r);i=Math.max(-b,Math.min(b,i)),i=Math.round(i*180/Math.PI)*Math.PI/180,this.handlers.onDrag(i)}draw(e){let{ctx:t,width:n,height:r}=s(this.canvas),i=d.scale,a=this.sim;t.clearRect(0,0,n,r);let o=28*i,u=44*i,f=Math.min((r-o-u)/y,(n/2-28*i)/y);this.px=n/2,this.py=o;let{px:m,py:h}=this,g=a.params.length*f,_=a.theta,v=m+g*Math.sin(_),b=h+g*Math.cos(_),x=(9+7*Math.sqrt(a.params.mass))*i,S=a.energies(),C=16*i,w=n-16*i;t.lineWidth=1,t.textBaseline=`bottom`,t.strokeStyle=d.ink,c(t,m-52*i,h,m+52*i,h);for(let e=-48;e<=52;e+=8)c(t,m+e*i,h,m+(e-6)*i,h-6*i);let T=h+g,E=h+g*Math.cos(a.releaseAngle);t.setLineDash([4*i,4*i]),t.strokeStyle=d.muted,c(t,C,T,w,T);let D=T-E>2;if(D&&(t.strokeStyle=d.potential,c(t,C,E,w,E)),t.setLineDash([]),t.font=p(12),t.textAlign=`left`,t.fillStyle=d.muted,t.fillText(e===`middle`?`기준면 (높이 0)`:`기준면 (h = 0)`,C+2*i,T-3*i),D&&(t.textAlign=`right`,t.fillStyle=d.potential,t.fillText(`처음 놓은 높이`,w-2*i,E-3*i)),e===`high`&&(t.setLineDash([2*i,3*i]),t.strokeStyle=d.line,c(t,m,h,m,T),t.setLineDash([]),Math.abs(_)>.01)){let e=Math.min(40*i,g*.5);t.strokeStyle=d.ink,t.beginPath();let n=Math.PI/2;t.arc(m,h,e,Math.min(n,n-_),Math.max(n,n-_)),t.stroke(),t.fillStyle=d.ink,t.textAlign=_>0?`left`:`right`,t.textBaseline=`top`;let r=Math.round(Math.abs(_)*180/Math.PI);t.fillText(`θ = ${r}°`,m+(_>0?6:-6)*i,h+e+4*i),t.textBaseline=`bottom`}if(S.height>.005){let n=_>=0?-1:1,r=v+n*(x+14*i);if(t.strokeStyle=d.potential,c(t,r,b,r,T),c(t,r-4*i,b,r+4*i,b),c(t,r-4*i,T,r+4*i,T),t.fillStyle=d.potential,t.textAlign=n>0?`left`:`right`,t.textBaseline=`middle`,T-b>=18*i){let a=`${e===`middle`?`높이`:`h`} = ${S.height.toFixed(2)} m`;t.fillText(a,r+n*6*i,(b+T)/2)}t.textBaseline=`bottom`}if(t.strokeStyle=d.ink,c(t,m,h,v,b),t.fillStyle=d.ink,t.beginPath(),t.arc(m,h,3*i,0,Math.PI*2),t.fill(),t.beginPath(),t.arc(v,b,x,0,Math.PI*2),t.fill(),S.speed>.02&&!this.grabbing){let n=Math.sign(a.omega),r=Math.cos(_)*n,o=-Math.sin(_)*n,s=Math.min(110*i,S.speed*28*i),c=v+r*(x+3*i),u=b+o*(x+3*i);t.strokeStyle=d.kinetic,t.fillStyle=d.kinetic,t.lineWidth=2,l(t,c,u,c+r*s,u+o*s,8*i),t.lineWidth=1,t.font=p(12,600),t.textAlign=`center`,t.fillText(e===`middle`?`속도`:`v`,c+r*(s+12*i),u+o*(s+12*i)+6*i)}t.font=p(12),t.fillStyle=d.muted,t.textAlign=`center`,t.fillText(this.grabbing?`손을 떼면 추가 출발합니다`:`추를 끌어서 놓는 높이를 바꿀 수 있어요`,n/2,r-10*i)}},S={middle:[{code:`[9과19-03]`,subject:`중학교 과학`,text:`일의 정의를 알고, 자유 낙하하는 물체의 운동에서 중력이 한 일을 위치 에너지와 운동 에너지로 표현할 수 있다.`},{code:`[9과19-04]`,subject:`중학교 과학`,text:`물체의 운동에서 역학적 에너지의 전환과 보존을 이해하고, 이를 활용하여 일상생활 속 물체의 운동을 예측할 수 있다.`}],high:[{code:`[12물리01-04]`,subject:`고등학교 물리학`,text:`일과 운동 에너지의 관계를 이해하고, 위치 에너지와 역학적 에너지 보존 법칙을 설명할 수 있다.`},{code:`[12물리01-05]`,subject:`고등학교 물리학`,text:`역학적 에너지가 열의 형태로 전환될 때 에너지 총량이 변하지 않음을 설명할 수 있다.`},{code:`[12물실02-06]`,subject:`고등학교 물리학 실험`,text:`진자의 주기에 영향을 주는 요인을 실험을 통해 확인할 수 있다.`}]},C=class{root;onJump;constructor(e,t){this.root=e,this.onJump=t,e.addEventListener(`click`,e=>{let t=e.target.closest(`button[data-q]`);t&&this.onJump(Number(t.dataset.q))})}setMode(e){let t=_[e],n=S[e].map(e=>{let n=t.map((t,n)=>t.standards.includes(e.code)?n:-1).filter(e=>e>=0).map(e=>`<button type="button" data-q="${e}" aria-label="질문 ${e+1}로 이동">${e+1}</button>`).join(``);return`
+          <li class="std" data-code="${e.code}">
+            <div class="std-head"><b class="std-code">${e.code}</b><span class="std-subject">${e.subject}</span></div>
+            <p class="std-text">${e.text}</p>
+            ${n?`<div class="std-qs"><span>연결 질문</span>${n}</div>`:``}
+          </li>`}).join(``);this.root.innerHTML=`
+      <div class="panel-head">
+        <h2>관련 성취기준</h2>
+        <span class="std-source">2022 개정 교육과정</span>
+      </div>
+      <ul class="std-list">${n}</ul>
+    `}highlight(e,t){this.root.querySelectorAll(`.std`).forEach(t=>{let n=e.includes(t.dataset.code);t.classList.toggle(`active`,n)}),this.root.querySelectorAll(`button[data-q]`).forEach(e=>{let n=Number(e.dataset.q)===t;e.setAttribute(`aria-current`,n?`true`:`false`)})}},w=e=>document.querySelector(e),T=Math.PI/180,E=9.8,D={get(e){try{return localStorage.getItem(e)}catch{return null}},set(e,t){try{localStorage.setItem(e,t)}catch{}}},O=new n({mass:1,length:1,g:E,airDrag:!1}),k=D.get(`physics.mode`)===`high`?`high`:`middle`,A=!0,j=1,M=!1;function N(e,t,n){let r=w(`#${e}`),i=w(`#${e}-val`),a=()=>i.textContent=t(Number(r.value));return r.addEventListener(`input`,()=>{a(),n(Number(r.value))}),a(),{set(e){r.value=String(e),a()}}}var P=N(`in-angle`,e=>`${e}°`,e=>V(e*T)),ee=N(`in-mass`,e=>`${e.toFixed(1)} kg`,e=>{O.params.mass=e,V()}),te=N(`in-length`,e=>`${e.toFixed(2)} m`,e=>{O.params.length=e,V()}),F=w(`#in-gravity`);F.addEventListener(`change`,()=>{O.params.g=Number(F.value),V()});var I=w(`#in-drag`);I.addEventListener(`change`,()=>{O.params.airDrag=I.checked});var L=w(`#btn-play`);function R(e){A=e,L.textContent=A?`일시정지`:`재생`}L.addEventListener(`click`,()=>R(!A)),w(`#btn-reset`).addEventListener(`click`,()=>V()),w(`#btn-step`).addEventListener(`click`,()=>{R(!1),O.advance(1/30),H.record(O)});var z=document.querySelectorAll(`button[data-speed]`);function B(e){j=e,z.forEach(t=>t.setAttribute(`aria-checked`,String(Number(t.dataset.speed)===e)))}z.forEach(e=>e.addEventListener(`click`,()=>B(Number(e.dataset.speed))));function V(e=O.releaseAngle){O.release(e),H.clear(),H.record(O),R(!0)}function ne(e){e.mass!==void 0&&(O.params.mass=e.mass,ee.set(e.mass)),e.length!==void 0&&(O.params.length=e.length,te.set(e.length)),e.g!==void 0&&k===`high`&&(O.params.g=e.g,F.value=String(e.g)),e.airDrag!==void 0&&(O.params.airDrag=e.airDrag,I.checked=e.airDrag),e.speed!==void 0&&B(e.speed);let t=e.angleDeg===void 0?O.releaseAngle:e.angleDeg*T;P.set(Math.round(Math.abs(t)/T)),V(t)}var H=new g(w(`#graph`)),re=new r(w(`.energy-panel`)),U=new o(w(`#formula`)),W=w(`#questions`),G=new C(w(`#standards`),e=>{K.goTo(e),W.scrollIntoView({block:`nearest`,behavior:`smooth`})}),K=new v(W,ne,(e,t)=>G.highlight(t.standards,e)),ie=w(`.legend-heat`),q={time:w(`#r-time`),height:w(`#r-height`),speed:w(`#r-speed`),max:w(`#r-max`)},ae=new x(w(`#stage`),O,{onGrab(){M=!0},onDrag(e){O.release(e),P.set(Math.round(Math.abs(e)/T))},onRelease(){M=!1,V()}}),J=document.querySelectorAll(`button[data-mode]`);function Y(e){k=e,document.body.dataset.mode=k,J.forEach(e=>e.setAttribute(`aria-checked`,String(e.dataset.mode===k))),k===`middle`&&O.params.g!==E&&(O.params.g=E,F.value=String(E),V()),U.setMode(k),G.setMode(k),K.setMode(k),D.set(`physics.mode`,k)}J.forEach(e=>e.addEventListener(`click`,()=>Y(e.dataset.mode)));var X=w(`#btn-large`);function Z(e){document.documentElement.classList.toggle(`large`,e),X.setAttribute(`aria-pressed`,String(e)),f(),D.set(`physics.large`,e?`1`:`0`)}X.addEventListener(`click`,()=>Z(!document.documentElement.classList.contains(`large`))),Z(D.get(`physics.large`)===`1`),Y(k),B(1),V(30*T);var Q=performance.now();function $(e){let t=Math.min(.05,(e-Q)/1e3);Q=e,A&&!M&&(O.advance(t*j),H.record(O));let n=O.energies(),r=O.initialTotal,i=O.params.airDrag||n.heat>r*.001;ae.draw(k),re.update(n,r,O.params.airDrag),U.update(O,n),H.draw(r,i),ie.hidden=!i,q.time.textContent=O.time.toFixed(1),q.height.textContent=n.height.toFixed(2),q.speed.textContent=n.speed.toFixed(2),q.max.textContent=O.maxSpeed.toFixed(2),requestAnimationFrame($)}requestAnimationFrame($);</script>
+    <style rel="stylesheet" crossorigin>:root{--ink:#111;--muted:#6b6b6b;--line:#d9d9d9;--bg:#fff;--soft:#f5f5f5;--kinetic:#2563eb;--potential:#ea580c;--heat:#9ca3af;--ok:#15803d;--no:#b91c1c;--lightningcss-light:initial;--lightningcss-dark: ;color-scheme:light;font-size:14px}:root.large{font-size:19px}*{box-sizing:border-box}body{background:var(--bg);color:var(--ink);margin:0;font-family:Pretendard,Apple SD Gothic Neo,Malgun Gothic,Noto Sans KR,sans-serif;font-size:1rem;line-height:1.55}h1{letter-spacing:-.02em;margin:0;font-size:1.7rem;font-weight:700}h2{margin:0 0 .75rem;font-size:1rem;font-weight:700}button,select,input{font:inherit;color:inherit}button{border:1px solid var(--ink);background:var(--bg);cursor:pointer;border-radius:4px;padding:.35rem .8rem}button:hover:not(:disabled){background:var(--soft)}button.primary{background:var(--ink);color:var(--bg)}button.primary:hover{background:#333}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--kinetic);outline-offset:2px}.topbar{border-bottom:1px solid var(--ink);flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:1rem;max-width:1280px;margin:0 auto;padding:1.5rem 16px 1rem;display:flex}.subtitle{color:var(--muted);margin:.25rem 0 0}.top-actions{align-items:center;gap:.5rem;display:flex}.seg{display:inline-flex}.seg button{border-radius:0;margin-left:-1px}.seg button:first-child{border-radius:4px 0 0 4px;margin-left:0}.seg button:last-child{border-radius:0 4px 4px 0}.seg button[aria-checked=true],#btn-large[aria-pressed=true]{background:var(--ink);color:var(--bg)}.layout{grid-template-columns:minmax(0,1fr) minmax(300px,360px);grid-template-areas:"stage energy""graph control""question standards";gap:16px;max-width:1280px;margin:0 auto;padding:16px;display:grid}.stage-panel{grid-area:stage}.energy-panel{grid-area:energy}.graph-panel{grid-area:graph}.control-panel{grid-area:control}.question-panel{grid-area:question}.standards-panel{grid-area:standards}@media (width<=860px){.layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"stage""energy""control""graph""question""standards"}}.panel{border:1px solid var(--line);border-radius:6px;min-width:0;padding:16px}.panel-head{flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.75rem;margin-bottom:.5rem;display:flex}.panel-head h2{margin:0}#stage{aspect-ratio:16/9;touch-action:none;cursor:grab;width:100%;max-height:560px;display:block}#stage:active{cursor:grabbing}.toolbar{border-top:1px solid var(--line);flex-wrap:wrap;align-items:center;gap:.5rem;padding-top:12px;display:flex}.seg-speed{margin-left:auto}.readout{grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin:12px 0 0;display:grid}.readout div{border-top:1px solid var(--line);padding-top:.35rem}.readout dt{color:var(--muted);font-size:.86rem}.readout dd{font-variant-numeric:tabular-nums;margin:0}.readout dd span{font-weight:700}@media (width<=520px){.readout{grid-template-columns:repeat(2,minmax(0,1fr))}.seg-speed{margin-left:0}}.bars{justify-content:space-between;align-items:flex-end;gap:10px;display:flex}.bar{flex-direction:column;flex:1 1 0;align-items:center;gap:4px;min-width:0;display:flex}.bar[hidden]{display:none}.bar-value{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:.86rem}.bar-track{border:1px solid var(--ink);border-radius:2px;width:100%;max-width:56px;height:11rem;position:relative;overflow:hidden}.bar-fill{position:absolute;bottom:0;left:0;right:0}.bar[data-key=kinetic] .bar-fill{background:var(--kinetic)}.bar[data-key=potential] .bar-fill{background:var(--potential)}.bar[data-key=heat] .bar-fill{background:var(--heat)}.bar-track.stack{flex-direction:column-reverse;display:flex}.stack>div{flex:none}.seg-kinetic{background:var(--kinetic)}.seg-potential{background:var(--potential)}.seg-heat{background:var(--heat)}.seg-heat[hidden]{display:none}.bar-label{text-align:center;font-size:.86rem;line-height:1.3}.bar.total .bar-label{font-weight:700}.formula{border-top:1px solid var(--line);margin-top:16px}.f-row{border-bottom:1px solid var(--line);padding:.6rem 0}.f-row:last-child{border-bottom:0}.f-name{font-size:.86rem;font-weight:700}.f-expr{font-size:1rem}.f-sub{color:var(--muted);font-variant-numeric:tabular-nums}.f-sub b{color:var(--ink);font-weight:600}.c-kinetic{color:var(--kinetic)}.c-potential{color:var(--potential)}.f-table{font-variant-numeric:tabular-nums;grid-template-columns:1fr auto;gap:.15rem 1rem;margin:.35rem 0;display:grid}.f-table dt{color:var(--muted)}.f-table dd{text-align:right;margin:0}.f-note{color:var(--muted);margin:.35rem 0 0;font-size:.86rem}#graph{width:100%;height:220px;display:block}.legend{color:var(--muted);gap:.9rem;margin:0;padding:0;font-size:.86rem;list-style:none;display:flex}.legend li{align-items:center;gap:.3rem;display:flex}.legend li[hidden]{display:none}.sw{border-top:2px solid;width:14px;height:0;display:inline-block}.sw-kinetic{border-color:var(--kinetic)}.sw-potential{border-color:var(--potential)}.sw-ink{border-color:var(--ink)}.sw-heat{border-color:var(--heat);border-top-style:dashed}.field{grid-template-columns:5rem minmax(0,1fr) 4.5rem;align-items:center;gap:.5rem;margin-bottom:.6rem;display:grid}.field output{text-align:right;font-variant-numeric:tabular-nums}.field select{border:1px solid var(--ink);background:var(--bg);border-radius:4px;grid-column:2/4;padding:.3rem .4rem}.field input[type=range]{width:100%;accent-color:var(--ink)}.field-check{gap:.5rem;display:flex}.field-check input{width:1.1rem;height:1.1rem;accent-color:var(--ink);margin:0}.hint{color:var(--muted);margin:.25rem 0 0;font-size:.86rem}body[data-mode=middle] .high-only{display:none}.q-nav{font-variant-numeric:tabular-nums;align-items:center;gap:.5rem;display:flex}.q-prompt{margin:.25rem 0 .75rem;font-size:1.15rem;font-weight:600}.q-options{flex-wrap:wrap;gap:.5rem;display:flex}.q-opt{padding:.5rem 1rem}.q-opt:disabled{cursor:default;color:var(--muted);border-color:var(--line)}.q-opt.chosen,.q-opt.chosen:disabled{background:var(--ink);color:var(--bg);border-color:var(--ink)}.q-opt.correct{outline:2px solid var(--ok);outline-offset:2px}.q-hint{color:var(--muted);margin:.75rem 0 0}.q-step{border-top:1px solid var(--line);margin-top:.9rem;padding-top:.75rem}.q-step p{margin:0 0 .6rem}.q-actions{flex-wrap:wrap;gap:.5rem;display:flex}.q-result{border-left:3px solid;margin-top:.9rem;padding:.75rem 1rem}.q-result.ok{border-color:var(--ok)}.q-result.no{border-color:var(--no)}.q-result p{margin:0 0 .4rem}.q-result p:last-child{margin-bottom:0}.q-standards{color:var(--muted);margin:-.4rem 0 .75rem;font-size:.86rem}.std-chip{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}.std-source{color:var(--muted);font-size:.86rem}.std-list{margin:0;padding:0;list-style:none}.std{border-left:3px solid #0000;border-top:1px solid var(--line);padding:.6rem 0 .6rem .75rem}.std:first-child{border-top:0}.std.active{border-left-color:var(--ink)}.std-head{flex-wrap:wrap;align-items:baseline;gap:.5rem;display:flex}.std-code{font-variant-numeric:tabular-nums}.std-subject{color:var(--muted);font-size:.86rem}.std-text{margin:.2rem 0 .4rem}.std:not(.active) .std-text{color:var(--muted)}.std-qs{color:var(--muted);align-items:center;gap:.35rem;font-size:.86rem;display:flex}.std-qs span{margin-right:.15rem}.std-qs button{font-variant-numeric:tabular-nums;min-width:1.9rem;padding:.1rem .45rem}.std-qs button[aria-current=true]{background:var(--ink);color:var(--bg)}
+/*$vite$:1*/</style>
+  </head>
+  <body data-mode="middle">
+    <header class="topbar">
+      <div class="title">
+        <h1>진자로 보는 역학적 에너지 보존</h1>
+        <p class="subtitle">추를 끌어서 놓고, 위치 에너지와 운동 에너지가 어떻게 바뀌는지 관찰해 보세요.</p>
+      </div>
+      <div class="top-actions">
+        <div class="seg" role="radiogroup" aria-label="학년 모드">
+          <button type="button" role="radio" data-mode="middle">중학교</button>
+          <button type="button" role="radio" data-mode="high">고등학교</button>
+        </div>
+        <button type="button" id="btn-large" aria-pressed="false">크게 보기</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel stage-panel">
+        <canvas id="stage" aria-label="진자 시뮬레이션. 추를 끌어서 놓는 높이를 정할 수 있습니다."></canvas>
+        <div class="toolbar">
+          <button type="button" id="btn-play" class="primary">일시정지</button>
+          <button type="button" id="btn-reset">다시 놓기</button>
+          <button type="button" id="btn-step" title="일시정지 중에 1/30초씩 진행">한 단계</button>
+          <div class="seg seg-speed" role="radiogroup" aria-label="재생 속도">
+            <button type="button" role="radio" data-speed="1">1배속</button>
+            <button type="button" role="radio" data-speed="0.5">½배속</button>
+            <button type="button" role="radio" data-speed="0.25">¼배속</button>
+          </div>
+        </div>
+        <dl class="readout">
+          <div><dt>시간</dt><dd><span id="r-time"></span> s</dd></div>
+          <div><dt>높이</dt><dd><span id="r-height"></span> m</dd></div>
+          <div><dt>속력</dt><dd><span id="r-speed"></span> m/s</dd></div>
+          <div><dt>최고 속력</dt><dd><span id="r-max"></span> m/s</dd></div>
+        </dl>
+      </section>
+
+      <section class="panel energy-panel">
+        <h2>에너지</h2>
+        <div class="bars">
+          <div class="bar" data-key="kinetic">
+            <span class="bar-value"></span>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <span class="bar-label">운동<br />에너지</span>
+          </div>
+          <div class="bar" data-key="potential">
+            <span class="bar-value"></span>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <span class="bar-label">위치<br />에너지</span>
+          </div>
+          <div class="bar" data-key="heat" hidden>
+            <span class="bar-value"></span>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+            <span class="bar-label">열에너지<br />등</span>
+          </div>
+          <div class="bar total">
+            <span class="bar-value"></span>
+            <div class="bar-track stack">
+              <div class="seg-potential"></div>
+              <div class="seg-kinetic"></div>
+              <div class="seg-heat"></div>
+            </div>
+            <span class="bar-label">역학적<br />에너지</span>
+          </div>
+        </div>
+        <div id="formula" class="formula"></div>
+      </section>
+
+      <section class="panel graph-panel">
+        <div class="panel-head">
+          <h2>시간에 따른 에너지</h2>
+          <ul class="legend">
+            <li><i class="sw sw-potential"></i>위치</li>
+            <li><i class="sw sw-kinetic"></i>운동</li>
+            <li><i class="sw sw-ink"></i>역학적</li>
+            <li class="legend-heat"><i class="sw sw-heat"></i>열 등</li>
+          </ul>
+        </div>
+        <canvas id="graph"></canvas>
+      </section>
+
+      <section class="panel control-panel">
+        <h2>실험 조건</h2>
+        <div class="field">
+          <label for="in-angle">놓는 각도</label>
+          <input id="in-angle" type="range" min="0" max="90" step="1" value="30" />
+          <output id="in-angle-val"></output>
+        </div>
+        <div class="field">
+          <label for="in-mass">질량</label>
+          <input id="in-mass" type="range" min="0.1" max="2" step="0.1" value="1" />
+          <output id="in-mass-val"></output>
+        </div>
+        <div class="field">
+          <label for="in-length">줄 길이</label>
+          <input id="in-length" type="range" min="0.2" max="2" step="0.05" value="1" />
+          <output id="in-length-val"></output>
+        </div>
+        <div class="field high-only">
+          <label for="in-gravity">중력</label>
+          <select id="in-gravity">
+            <option value="9.8">지구 (9.8 m/s²)</option>
+            <option value="1.6">달 (1.6 m/s²)</option>
+            <option value="3.7">화성 (3.7 m/s²)</option>
+            <option value="24.8">목성 (24.8 m/s²)</option>
+          </select>
+        </div>
+        <div class="field field-check">
+          <input id="in-drag" type="checkbox" />
+          <label for="in-drag">공기 저항</label>
+        </div>
+        <p class="hint">조건을 바꾸면 추가 같은 각도에서 다시 출발합니다.</p>
+      </section>
+
+      <section class="panel question-panel" id="questions"></section>
+
+      <section class="panel standards-panel" id="standards"></section>
+    </main>
+
+  </body>
+</html>
